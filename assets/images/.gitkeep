@@ -1,0 +1,6 @@
+This folder is intentionally empty. See the project README for why (no
+bundled Microsoft-copyrighted sounds, no bundled bitmaps — the UI is drawn
+procedurally). Empty directories aren't tracked by git, so this placeholder
+file exists just to keep the folder present after cloning; delete it once
+you add real files here, and add the folder back to pubspec.yaml's
+`flutter: assets:` list if you do.
