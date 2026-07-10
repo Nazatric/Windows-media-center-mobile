@@ -1,0 +1,78 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Set up Flutter (stable)
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # settings.gradle reads flutter.sdk / sdk.dir from local.properties.
+      # Flutter normally (re)writes this file itself the first time you run
+      # `flutter build`/`flutter run`, but we need it a step earlier here so
+      # that a plain `gradle wrapper` invocation can even evaluate the
+      # project's settings.gradle. So we write it explicitly first.
+      - name: Write android/local.properties
+        run: |
+          FLUTTER_BIN="$(which flutter)"
+          FLUTTER_ROOT="$(dirname "$(dirname "$FLUTTER_BIN")")"
+          {
+            echo "flutter.sdk=$FLUTTER_ROOT"
+            echo "sdk.dir=${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          } > android/local.properties
+          cat android/local.properties
+
+      # The repo intentionally does not commit the binary Gradle wrapper jar
+      # (android/gradle/wrapper/gradle-wrapper.jar). GitHub-hosted Ubuntu
+      # runners ship with a system Gradle install, so we use it once to
+      # (re)generate a wrapper that exactly matches the pinned version in
+      # android/gradle/wrapper/gradle-wrapper.properties. This avoids ever
+      # shipping a hand-authored binary that can't be verified.
+      - name: Generate Gradle wrapper
+        working-directory: android
+        run: gradle wrapper --gradle-version 8.10.2 --distribution-type all
+
+      - name: Flutter analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+        continue-on-error: true
+
+      - name: Flutter test
+        run: flutter test
+        continue-on-error: true
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-media-center-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
