@@ -1,0 +1,50 @@
+name: windows_media_center
+description: >
+  A Flutter recreation of the Windows Vista / Windows 7 era Windows Media
+  Center interface, built for Android. Faithful Aero Glass styling, no
+  Material Design, no flat UI.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # --- State management ---------------------------------------------------
+  provider: ^6.1.2
+
+  # --- Persistence ----------------------------------------------------------
+  shared_preferences: ^2.3.3
+  path: ^1.9.0
+
+  # --- Permissions & file access ---------------------------------------------
+  permission_handler: ^11.3.1
+  file_picker: ^11.0.2
+
+  # --- Media playback ---------------------------------------------------------
+  # Pinned below 0.10.x: there is a known upstream issue where just_audio 0.10.x
+  # fails to play audio in *release* builds (works fine in debug). 0.9.46 is the
+  # last line confirmed unaffected. See ryanheise/just_audio issue #1486.
+  just_audio: ^0.9.46
+  video_player: ^2.9.2
+
+  # --- Photo metadata (pure Dart, no native code) ------------------------------
+  exif: ^3.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  # UI sound effects (see lib/services/sound_service.dart) — original audio
+  # created by the project author in the Windows Vista/7 aesthetic, not
+  # extracted Microsoft assets.
+  assets:
+    - assets/sounds/
